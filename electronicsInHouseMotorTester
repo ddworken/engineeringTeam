@@ -1,0 +1,1419 @@
+#include <Servo.h>
+
+/*
+Very messy code state with lots of duplicated code. 
+Was not used at competition, only used for testing purposes when Charles is not available to run his more complex motor controller. 
+*/
+
+//Pins
+int motor1f = 2; //motor 1 forward must be PWM capable
+int motor1b = 3; //motor 1 backward must be PWM capable
+int motor2f = 4; //motor 2 forward must be PWM capable
+int motor2b = 5; //motor 2 backward must be PWM capable
+int motor3f = 6; //motor 3 forward must be PWM capable
+int motor3b = 7; //motor 3 backward must be PWM capable
+int motor4f = 8; //motor 4 forward must be PWM capable
+int motor4b = 9; //motor 4 backward must be PWM capable
+int combo1f = 10; //combo 1 forward (known as 5) must be PWM capable
+int combo1b = 11; //combo 1 backward (known as 5) must be PWM capable
+int combo2f = 12; //combo 2 forward (known as 6) must be PWM capable
+int combo2b = 13; //combo 2 backward (known as 6) must be PWM capable
+
+
+//Variables
+int incomingbyte = 0;   // for incoming serial data
+int loop_directions = 0; //for keeping track of the number of times the directions in void loop have been shown
+int motor = 0; //for keeping track of the number of times the directions in the motor functions have been shown
+int servo_directions1 = 0; //for keeping track of the number of times the directions in the servo function has been shown
+int servo_directions2 = 0; //for keeping track of the number of times the directions in the servo-1 function has been shown
+int servo_directions3 = 0; //for keeping track of the number of times the directions in the servo-2 function has been shown
+int servo_directions4 = 0; //for keeping track of the number of times the directions in the servo-3 function has been shown
+int servo_directions5 = 0; //for keeping track of the number of times the directions in the servo-4 function has been shown
+int powerchooser_directions = 0; //for keeping track of the number of times the directions in the power based motor chooser have been shown
+int servoselectorbyte = 0; //for use in selecting which servo to control
+int variable = 0; //for keeping track of the number of times the directions in the variable menu has been shown
+int variable_power = 0; //used in keeping track of whether or not the user wants the power to be full (255) or variable (user defined)
+int off_directions = 0; //used in keeping track of whether or not the directions in the off function has been shown
+int motoroff = 0; //used in keeping track of whether or not the directions in the off function (for choosing forward or backward) has been shown
+
+
+//Power Variables
+int power1 = 0; 
+int power2 = 0;
+int power3 = 0;
+int power4 = 0;
+float powerp;
+
+
+//Servo Variables
+int servo1angle = 0;
+int servo1angle1 = 0;
+int servo1angle2 = 0;
+int servo1angle3 = 0;
+
+int servo2angle = 0;
+int servo2angle1 = 0;
+int servo2angle2 = 0;
+int servo2angle3 = 0;
+
+int servo3angle = 0;
+int servo3angle1 = 0;
+int servo3angle2 = 0;
+int servo3angle3 = 0;
+
+int servo4angle = 0;
+int servo4angle1 = 0;
+int servo4angle2 = 0;
+int servo4angle3 = 0;
+
+
+//Servos
+Servo servo1;
+Servo servo2;
+Servo servo3;
+Servo servo4;
+
+void setup() {
+  Serial.begin(9600); //start serial communication
+  //Initialize pins for the motors
+  pinMode(motor1f, OUTPUT); //initializes the motor pin as an output
+  pinMode(motor1b, OUTPUT); //initializes the motor pin as an output
+  pinMode(motor2f, OUTPUT); //initializes the motor pin as an output
+  pinMode(motor2b, OUTPUT); //initializes the motor pin as an output
+  pinMode(motor3f, OUTPUT); //initializes the motor pin as an output
+  pinMode(motor3b, OUTPUT); //initializes the motor pin as an output
+  pinMode(motor4f, OUTPUT); //initializes the motor pin as an output
+  pinMode(motor4b, OUTPUT); //initializes the motor pin as an output
+  pinMode(combo1f, OUTPUT); //initializes the combo pin as an output
+  pinMode(combo1b, OUTPUT); //initializes the combo pin as an output
+  pinMode(combo2f, OUTPUT); //initializes the combo pin as an output
+  pinMode(combo2b, OUTPUT); //initializes the combo pin as an output 
+  //Attach servos
+  servo1.attach(33);  // attaches servo1 on pin 14 to the servo object 
+  servo2.attach(30);  // attaches servo2 on pin 15 to the servo object 
+  servo3.attach(31);  // attaches servo3 on pin 16 to the servo object 
+  servo4.attach(32);  // attaches servo4 on pin 17 to the servo object 
+  
+}
+
+// the loop routine runs over and over again forever:
+void loop() {
+  servo_directions1 = 0;
+  servo_directions1 = 0; 
+  servo_directions2 = 0; 
+  servo_directions3 = 0; 
+  servo_directions4 = 0; 
+  servo_directions5 = 0; 
+  variable_power = 0;
+  variable = 0;
+  powerchooser_directions = 0;
+  motor = 0; 
+  off_directions = 0; 
+  motoroff = 0; 
+  if (loop_directions < 1)
+  {
+    Serial.println("Input Motor Number or S to acess the Servos or P if you want to input a specific value for a motor or O (not zero) to turn off a motor");
+    loop_directions++;
+  }
+  //Serial.println("Input Motor Number");
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read();
+                  if (incomingbyte == 49) //49=1
+                  {
+                    Serial.println("Motor 1 selected");
+                    motor1();
+                  }
+                  else
+                  {
+                    if (incomingbyte == 50) //50=2
+                    {
+                      Serial.println("Motor 2 selected");
+                      motor2();
+                    }
+                    else 
+                    {
+                      if (incomingbyte == 51) //51=3
+                      {
+                        Serial.println("Motor 3 selected");
+                        motor3();
+                      }
+                      else
+                      {
+                        if (incomingbyte == 52) //52=4
+                        {
+                          Serial.println("Motor 4 selected");
+                          motor4();
+                        }
+                        else
+                        {
+                          if (incomingbyte == 53) //53=5
+                          {
+                            Serial.println("Combo 1 selected");
+                            combo1();
+                          }
+                          else 
+                          {
+                            if (incomingbyte == 54) //54=6
+                            {
+                              Serial.println("Combo 2 selected");
+                              combo2();
+                            }
+                            else
+                            {
+                              if (incomingbyte == 115 || incomingbyte == 83) //s=115 and S=83
+                              {
+                                Serial.println("Servo Selected");
+                                servo();
+                              }
+                              else
+                              {
+                                if (incomingbyte == 111 || incomingbyte == 79) //111=O and 79=o
+                                {
+                                  Serial.println("Off menu selected");
+                                  off();
+                                }
+                                else
+                                {
+                                if (incomingbyte == 112 || incomingbyte == 80) //112=p and 80=P
+                                {
+                                  Serial.println("Variable Motor Speed Selected");
+                                  variable_power = 1;
+                                  variable1();
+                                }}
+                              }
+                            }
+                          }
+                        } 
+                    }
+                  }
+                }
+        }
+}
+
+void variable1() { 
+  loop_directions = 0;
+  if (variable < 1)
+  {
+    Serial.println("Input a number ranging from 1 to 255. It must be 3 digits long");
+    variable++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                power1 = Serial.read();
+                power1 = power1 - 48;
+                power1 = power1 * 100; 
+                Serial.println(power1);
+                if (1 != 2) {
+                  variable2(); 
+                }
+  }
+else 
+{
+  variable1();
+}
+}
+
+
+void variable2() {
+  loop_directions = 0;
+  if (Serial.available() > 0) { //is serial available
+                power2 = Serial.read();
+                power2 = power2 - 48;
+                power2 = power2 * 10;
+                Serial.println(power2); 
+                if (1 != 2) {
+                  variable3(); 
+                }
+  
+}
+  else 
+  {
+    variable2();
+  }
+}
+
+
+void variable3() {
+  loop_directions = 0;
+  if (Serial.available() > 0) { //is serial available
+                power3 = Serial.read();
+                power3 = power3 - 48;
+                power3 = power3 * 1; 
+                Serial.println(power3); 
+                if (1 != 2) {
+                  variable4(); 
+                }
+  
+}
+  else 
+  {
+    variable3();
+  }
+}
+
+
+void variable4() {
+  loop_directions = 0;
+  power4 = power1 + power2 + power3;
+  Serial.print("You are setting the motor to: ");
+  Serial.println(power4);
+  Serial.print("Also known as: ");
+  powerp = (float)power4 / 255;
+  powerp = (float)powerp * 100;
+  Serial.print(powerp);
+  Serial.println("%");
+  powerchooser();
+  
+}
+
+
+
+void powerchooser() {
+  if (powerchooser_directions < 1)
+  {
+    Serial.println("Input Motor Number");
+    powerchooser_directions++;
+  }
+  //Serial.println("Input Motor Number");
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read();
+                  if (incomingbyte == 49) //49=1
+                  {
+                    Serial.println("Motor 1 selected");
+                    motorvariable1();
+                  }
+                  else
+                  {
+                    if (incomingbyte == 50) //50=2
+                    {
+                      Serial.println("Motor 2 selected");
+                      motorvariable2();
+                    }
+                    else 
+                    {
+                      if (incomingbyte == 51) //51=3
+                      {
+                        Serial.println("Motor 3 selected");
+                        motorvariable3();
+                      }
+                      else
+                      {
+                        if (incomingbyte == 52) //52=4
+                        {
+                          Serial.println("Motor 4 selected");
+                          motorvariable4();
+                        }
+                        else
+                        {
+                          if (incomingbyte == 53) //53=5
+                          {
+                            Serial.println("Combo 1 selected");
+                            combovariable1();
+                          }
+                          else 
+                          {
+                            if (incomingbyte == 54) //54=6
+                            {
+                              Serial.println("Combo 2 selected");
+                              combovariable2();
+                            }
+                            else
+                            {
+                              Serial.print("Typo detected, redirecting you to the beggining of powerchooser()");
+                              powerchooser();
+                            }
+                              }
+                            }
+                          }
+                        } 
+                    } 
+                  }
+else
+{
+  powerchooser();
+}
+
+}
+
+void motor1() { //decide forward or backward for motor 1
+  loop_directions = 0;
+  if (motor < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motor++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read(); 
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Firing Motor 1 Forward");
+                    digitalWrite(motor1b, LOW); //sets pin to low
+                    digitalWrite(motor1f, HIGH); //sets pin to high
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Firing Motor 1 Backward");
+                    digitalWrite(motor1f, LOW); //sets pin to low
+                    digitalWrite(motor1b, HIGH); //sets pin to high
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of motor1()");
+                        motor1();
+                      }
+  }}}
+else 
+{
+  motor1();
+}
+}
+
+void motor2() { //decide forward or backward for motor 2
+  loop_directions = 0;
+  if (motor < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motor++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read();
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Firing Motor 2 Forward");
+                    digitalWrite(motor2b, LOW); //sets pin to low
+                    digitalWrite(motor2f, HIGH); //sets pin to high
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Firing Motor 2 Backward");
+                    digitalWrite(motor2f, LOW); //sets pin to low
+                    digitalWrite(motor2b, HIGH); //sets pin to high
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of motor2()");
+                        motor2();
+                      }
+  }}}
+  else 
+{
+  motor2();
+}
+}
+void motor3() { //decide forward or backward for motor 3
+  loop_directions = 0;
+  if (motor < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motor++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read();
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Firing Motor 3 Forward");
+                    digitalWrite(motor3b, LOW); //sets pin to low
+                    digitalWrite(motor3f, HIGH); //sets pin to high
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Firing Motor 3 Backward");
+                    digitalWrite(motor3f, LOW); //sets pin to low
+                    digitalWrite(motor3b, HIGH); //sets pin to high
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of motor3()");
+                        motor3();
+                      }
+  }}}
+  else 
+{
+  motor3();
+}
+}
+void motor4() { //decide forward or backward for motor 4
+  loop_directions = 0;
+  if (motor < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motor++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read();
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Firing Motor 4 Forward");
+                    digitalWrite(motor4b, LOW); //sets pin to low
+                    digitalWrite(motor4f, HIGH); //sets pin to high
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Firing Motor 4 Backward");
+                    digitalWrite(motor4f, LOW); //sets pin to low
+                    digitalWrite(motor4b, HIGH); //sets pin to high
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of motor4()");
+                        motor4();
+                      }
+  }}}
+  else 
+{
+  motor4();
+}
+}
+
+void combo1() { //decide forward or backward for motor 3
+  loop_directions = 0;
+  if (motor < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motor++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read();
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Firing Combo 1 Forward");
+                    digitalWrite(combo1b, LOW); //sets pin to low
+                    digitalWrite(combo1f, HIGH); //sets pin to high
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Firing Combo 1 Backward");
+                    digitalWrite(combo1f, LOW); //sets pin to low
+                    digitalWrite(combo1b, HIGH); //sets pin to high
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of combo1()");
+                        combo1();
+                      }
+  }}}
+  else 
+{
+  combo1();
+}
+}
+
+void combo2() { //decide forward or backward for combo 2
+  loop_directions = 0;
+  if (motor < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motor++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read();
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Firing Combo 2 Forward");
+                    digitalWrite(combo2b, LOW); //sets pin to low
+                    digitalWrite(combo2f, HIGH); //sets pin to high
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Firing Combo 2 Backward");
+                    digitalWrite(combo2f, LOW); //sets pin to low
+                    digitalWrite(combo2b, HIGH); //sets pin to high
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of combo2()");
+                        combo2();
+                    }
+                    }}}
+  else 
+{
+  combo2();
+}
+}
+
+void motorvariable1() { //decide forward or backward for motor 1
+  loop_directions = 0;
+  if (motor < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motor++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the inMcoming byte:
+                incomingbyte = Serial.read(); 
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Firing Motor 1 Forward");
+                    digitalWrite(motor1b, LOW); //sets pin to low
+                    analogWrite(motor1f, power4); //sets pin to power4 brightness
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Firing Motor 1 Backward");
+                    digitalWrite(motor1f, LOW); //sets pin to low
+                    analogWrite(motor1b, power4); //sets pin to power4 brightness
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of motor1()");
+                      }
+  }}}
+else 
+{
+  motorvariable1();
+}
+}
+
+void motorvariable2() { //decide forward or backward for motor 2
+  loop_directions = 0;
+  if (motor < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motor++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read();
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Firing Motor 2 Forward");
+                    digitalWrite(motor2b, LOW); //sets pin to low
+                    analogWrite(motor2f, power4); //sets pin to high
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Firing Motor 2 Backward");
+                    digitalWrite(motor2f, LOW); //sets pin to low
+                    analogWrite(motor2b, power4); //sets pin to power4 brightness
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of motor2()");
+                      }
+  }}}
+  else 
+{
+  motorvariable2();
+}
+}
+void motorvariable3() { //decide forward or backward for motor 3
+  loop_directions = 0;
+  if (motor < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motor++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read();
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Firing Motor 3 Forward");
+                    digitalWrite(motor3b, LOW); //sets pin to low
+                    analogWrite(motor3f, power4); //sets pin to power4 
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Firing Motor 3 Backward");
+                    digitalWrite(motor3f, LOW); //sets pin to low
+                    analogWrite(motor3b, power4); //sets pin to high
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of motor3()");
+                      }
+  }}}
+  else 
+{
+  motorvariable3();
+}
+}
+void motorvariable4() { //decide forward or backward for motor 4
+  loop_directions = 0;
+  if (motor < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motor++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read();
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Firing Motor 4 Forward");
+                    digitalWrite(motor4b, LOW); //sets pin to low
+                    analogWrite(motor4f, power4); //sets pin to power4
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Firing Motor 4 Backward");
+                    digitalWrite(motor4f, LOW); //sets pin to low
+                    analogWrite(motor4b, power4); //sets pin to high
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of motor4()");
+                      }
+  }}}
+  else 
+{
+  motorvariable4();
+}
+}
+
+void combovariable1() { //decide forward or backward for motor 3
+  loop_directions = 0;
+  if (motor < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motor++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read();
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Firing Combo 1 Forward");
+                    digitalWrite(combo1b, LOW); //sets pin to low
+                    analogWrite(combo1f, power4); //sets pin to high
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Firing Combo 1 Backward");
+                    digitalWrite(combo1f, LOW); //sets pin to low
+                    analogWrite(combo1b, power4); //sets pin to high
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of combo1");
+                      }
+  }}}
+  else 
+{
+  combovariable1();
+}
+}
+
+void combovariable2() { //decide forward or backward for combo 2
+  loop_directions = 0;
+  if (motor < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motor++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read();
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Firing Combo 2 Forward");
+                    digitalWrite(combo2b, LOW); //sets pin to low
+                    analogWrite(combo2f, power4); //sets pin to high
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Firing Combo 2 Backward");
+                    digitalWrite(combo2f, LOW); //sets pin to low
+                    analogWrite(combo2b, power4); //sets pin to high
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of combo2");
+                    }
+                    }}}
+  else 
+{
+  combovariable2();
+}
+}
+
+void servo() {
+  loop_directions = 0;
+  if (servo_directions1 < 1)
+  {
+    Serial.println("Input servo number");
+    servo_directions1++;
+  }
+  //Serial.println("Input Motor Number");
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                servoselectorbyte = Serial.read();
+                  if (servoselectorbyte == 49) //49=1
+                  {
+                    Serial.println("Servo 1 selected");
+                    servofunction1();
+                  }
+                  else
+                  {
+                    if (servoselectorbyte == 50) //50=2
+                    {
+                      Serial.println("Servo 2 selected");
+                      servofunction2();
+                    }
+                    else 
+                    {
+                      if (servoselectorbyte == 51) //51=3
+                      {
+                        Serial.println("Servo 3 selected");
+                        servofunction3();
+                      }
+                      else
+                      {
+                        if (servoselectorbyte == 52) //52=4
+                        {
+                          Serial.println("Servo 4 selected");
+                          servofunction4();
+                        }
+
+
+
+                      }
+                    }
+                  }
+  }
+  else 
+  {
+    servo();
+  }
+}
+
+//Servo1-Begin
+
+void servofunction1() {
+  loop_directions = 0;
+  if (servo_directions2 < 1)
+  {
+    Serial.println("Input angle in degrees, the valid range is from 0 to 180. Each number must be input indiviudally. ");
+    servo_directions2++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                servo1angle1 = Serial.read();
+                servo1angle1 = servo1angle1 - 48;
+                servo1angle1 = servo1angle1 * 100; 
+                Serial.println(servo1angle1);
+                if (1 != 2) {
+                  servofunction12(); 
+                }
+  
+}
+  else 
+  {
+    servofunction1();
+  }
+}
+
+void servofunction12() {
+  loop_directions = 0;
+  if (Serial.available() > 0) { //is serial available
+                servo1angle2 = Serial.read();
+                servo1angle2 = servo1angle2 - 48;
+                servo1angle2 = servo1angle2 * 10;
+                Serial.println(servo1angle2); 
+                if (1 != 2) {
+                  servofunction13(); 
+                }
+  
+}
+  else 
+  {
+    servofunction12();
+  }
+}
+
+void servofunction13() {
+  loop_directions = 0;
+  if (Serial.available() > 0) { //is serial available
+                servo1angle3 = Serial.read();
+                servo1angle3 = servo1angle3 - 48;
+                servo1angle3 = servo1angle3 * 1; 
+                Serial.println(servo1angle3); 
+                if (1 != 2) {
+                  servofunction14(); 
+                }
+  
+}
+  else 
+  {
+    servofunction13();
+  }
+}
+
+void servofunction14() {
+  loop_directions = 0;
+  servo1angle = servo1angle1 + servo1angle2 + servo1angle3;
+  Serial.print("Setting Servo to: ");
+  Serial.println(servo1angle);
+  servo1.write(servo1angle);
+}
+
+//Servo 1-End
+
+//Servo 2-Begin
+
+void servofunction2() {
+  loop_directions = 0;
+  if (servo_directions3 < 1)
+  {
+    Serial.println("Input angle in degrees, the valid range is from 0 to 180. Each number must be input indiviudally. ");
+    servo_directions3++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                servo2angle1 = Serial.read();
+                servo2angle1 = servo2angle1 - 48;
+                servo2angle1 = servo2angle1 * 100; 
+                Serial.println(servo2angle1);
+                if (1 != 2) {
+                  servofunction22(); 
+                }
+  
+}
+  else 
+  {
+    servofunction2();
+  }
+}
+
+void servofunction22() {
+  loop_directions = 0;
+  if (Serial.available() > 0) { //is serial available
+                servo2angle2 = Serial.read();
+                servo2angle2 = servo2angle2 - 48;
+                servo2angle2 = servo2angle2 * 10; 
+                Serial.println(servo2angle2);
+                if (1 != 2) {
+                  servofunction23(); 
+                }
+  
+}
+  else 
+  {
+    servofunction22();
+  }
+}
+
+void servofunction23() {
+  loop_directions = 0;
+  if (Serial.available() > 0) { //is serial available
+                servo2angle3 = Serial.read();
+                servo2angle3 = servo2angle3 - 48;
+                servo2angle3 = servo2angle3 * 1; 
+                Serial.println(servo2angle3);
+                if (1 != 2) {
+                  servofunction24(); 
+                }
+  
+}
+  else 
+  {
+    servofunction23();
+  }
+}
+
+void servofunction24() {
+  loop_directions = 0;
+  servo2angle = servo2angle1 + servo2angle2 + servo2angle3;
+  Serial.print("Setting Servo to: ");
+  Serial.println(servo2angle);
+  servo3.write(servo2angle);
+}
+
+//servo 2-End
+
+//servo 3-begin
+
+void servofunction3() {
+  loop_directions = 0;
+  if (servo_directions4 < 1)
+  {
+    Serial.println("Input angle in degrees, the valid range is from 0 to 180. Each number must be input indiviudally. ");
+    servo_directions4++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                servo3angle1 = Serial.read();
+                servo3angle1 = servo3angle1 - 48;
+                servo3angle1 = servo3angle1 * 100; 
+                Serial.println(servo3angle1);
+                if (1 != 2) {
+                  servofunction32(); 
+                }
+  
+}
+  else 
+  {
+    servofunction3();
+  }
+}
+
+void servofunction32() {
+  loop_directions = 0;
+  if (Serial.available() > 0) { //is serial available
+                servo3angle2 = Serial.read();
+                servo3angle2 = servo3angle2 - 48;
+                servo3angle2 = servo3angle2 * 10; 
+                Serial.println(servo3angle2);
+                if (1 != 2) {
+                  servofunction33(); 
+                }
+  
+}
+  else 
+  {
+    servofunction32();
+  }
+}
+
+void servofunction33() {
+  loop_directions = 0;
+  if (Serial.available() > 0) { //is serial available
+                servo3angle3 = Serial.read();
+                servo3angle3 = servo3angle3 - 48;
+                servo3angle3 = servo3angle3 * 1; 
+                Serial.println(servo3angle3);
+                if (1 != 2) {
+                  servofunction34(); 
+                }
+  
+}
+  else 
+  {
+    servofunction33();
+  }
+}
+
+void servofunction34() {
+  loop_directions = 0;
+  servo3angle = servo3angle1 + servo3angle2 + servo3angle3;
+  Serial.print("Setting Servo to: ");
+  Serial.println(servo3angle);
+  servo3.write(servo3angle);
+}
+
+//servo 3-end
+
+//servo 4-begin
+
+void servofunction4() {
+  loop_directions = 0;
+  if (servo_directions4 < 1)
+  {
+    Serial.println("Input angle in degrees, the valid range is from 0 to 180. Each number must be input indiviudally. ");
+    servo_directions4++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                servo4angle1 = Serial.read();
+                servo4angle1 = servo4angle1 - 48;
+                servo4angle1 = servo4angle1 * 100; 
+                Serial.println(servo4angle1);
+                if (1 != 2) {
+                  servofunction42(); 
+                }
+  
+}
+  else 
+  {
+    servofunction4();
+  }
+}
+
+void servofunction42() {
+  loop_directions = 0;
+  if (Serial.available() > 0) { //is serial available
+                servo4angle2 = Serial.read();
+                servo4angle2 = servo4angle2 - 48;
+                servo4angle2 = servo4angle2 * 10; 
+                Serial.println(servo4angle2);
+                if (1 != 2) {
+                  servofunction43(); 
+                }
+  
+}
+  else 
+  {
+    servofunction42();
+  }
+}
+
+void servofunction43() {
+  loop_directions = 0;
+  if (Serial.available() > 0) { //is serial available
+                servo4angle3 = Serial.read();
+                servo4angle3 = servo4angle3 - 48;
+                servo4angle3 = servo4angle3 * 1; 
+                Serial.println(servo4angle3);
+                if (1 != 2) {
+                  servofunction44(); 
+                }
+  
+}
+  else 
+  {
+    servofunction43();
+  }
+}
+
+void servofunction44() {
+  loop_directions = 0;
+  servo4angle = servo4angle1 + servo4angle2 + servo4angle3;
+  Serial.print("Setting Servo to: ");
+  Serial.println(servo4angle);
+  servo4.write(servo4angle);
+}
+
+//servo 4-end
+
+void off()  {
+  if (off_directions < 1)
+  {
+    Serial.println("Input Motor Number that you want to turn off");
+    off_directions++;
+  }
+  //Serial.println("Input Motor Number");
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read();
+                  if (incomingbyte == 49) //49=1
+                  {
+                    Serial.println("Motor 1 selected");
+                    motor1off();
+                  }
+                  else
+                  {
+                    if (incomingbyte == 50) //50=2
+                    {
+                      Serial.println("Motor 2 selected");
+                      motor2off();
+                    }
+                    else 
+                    {
+                      if (incomingbyte == 51) //51=3
+                      {
+                        Serial.println("Motor 3 selected");
+                        motor3off();
+                      }
+                      else
+                      {
+                        if (incomingbyte == 52) //52=4
+                        {
+                          Serial.println("Motor 4 selected");
+                          motor4off();
+                        }
+                        else
+                        {
+                          if (incomingbyte == 53) //53=5
+                          {
+                            Serial.println("Combo 1 selected");
+                            combo1off();
+                          }
+                          else 
+                          {
+                            if (incomingbyte == 54) //54=6
+                            {
+                              Serial.println("Combo 2 selected");
+                              combo2off();
+                            }
+                            else
+                            {
+                              Serial.print("Typo detected, redirecting you to the beggining of off()");
+                              off();
+                            }
+                              }
+                            }
+                          }
+                        } 
+                    } 
+                  }
+else
+{
+  off();
+}
+
+}
+
+void motor1off()  { //decide whether you want to turn the forward portion or backward portion off
+loop_directions = 0;
+  if (motoroff < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motoroff++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read(); 
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Turning motor 1-forward off");
+                    digitalWrite(motor1f, LOW); //sets pin to high
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Turning motor 1-backward off");
+                    digitalWrite(motor1b, LOW); //sets pin to high
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of motor1off()");
+                        motor1off();
+                      }
+  }}}
+else 
+{
+  motor1off();
+}
+}
+
+void motor2off()  { //decide whether you want to turn the forward portion or backward portion off
+loop_directions = 0;
+  if (motoroff < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motoroff++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read(); 
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Turning motor 2-forward off");
+                    digitalWrite(motor2f, LOW); //sets pin to high
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Turning motor 2-backward off");
+                    digitalWrite(motor2b, LOW); //sets pin to high
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of motor2off()");
+                        motor2off();
+                      }
+  }}}
+else 
+{
+  motor2off();
+}
+}
+
+void motor3off()  { //decide whether you want to turn the forward portion or backward portion off
+loop_directions = 0;
+  if (motoroff < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motoroff++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read(); 
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Turning motor 3-forward off");
+                    digitalWrite(motor3f, LOW); //sets pin to high
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Turning motor 3-backward off");
+                    digitalWrite(motor3b, LOW); //sets pin to high
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of motor3off()");
+                        motor3off();
+                      }
+  }}}
+else 
+{
+  motor3off();
+}
+}
+
+void motor4off()  { //decide whether you want to turn the forward portion or backward portion off
+loop_directions = 0;
+  if (motoroff < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motoroff++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read(); 
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Turning motor 4-forward off");
+                    digitalWrite(motor4f, LOW); //sets pin to high
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Turning motor 4-backward off");
+                    digitalWrite(motor4b, LOW); //sets pin to high
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of motor4off()");
+                        motor4off();
+                      }
+  }}}
+else 
+{
+  motor4off();
+}
+}
+
+void combo1off()  { //decide whether you want to turn the forward portion or backward portion off
+loop_directions = 0;
+  if (motoroff < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motoroff++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read(); 
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Turning combo 1-forward off");
+                    digitalWrite(combo1f, LOW); //sets pin to high
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Turning combo 1-backward off");
+                    digitalWrite(combo1b, LOW); //sets pin to high
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of combo1off()");
+                        combo1off();
+                      }
+  }}}
+else 
+{
+  combo1off();
+}
+}
+
+void combo2off()  { //decide whether you want to turn the forward portion or backward portion off
+loop_directions = 0;
+  if (motoroff < 1)
+  {
+    Serial.println("Input F for forward or B for backward");
+    motoroff++;
+  }
+  if (Serial.available() > 0) { //is serial available
+                // read the incoming byte:
+                incomingbyte = Serial.read(); 
+                //Serial.println(incomingbyte, DEC); //for debuggin purposes only
+                if (incomingbyte == 102 || incomingbyte == 70) //102=f and 70=F
+                  {
+                    Serial.println("Turning combo 2-forward off");
+                    digitalWrite(combo2f, LOW); //sets pin to high
+                  }
+                  else
+                  {
+                    if (incomingbyte == 98 || incomingbyte == 66) //98=b and 66=B
+                    {
+                      Serial.println("Turning combo 2-backward off");
+                    digitalWrite(combo2b, LOW); //sets pin to high
+                    }
+                    else 
+                    {
+                      if (incomingbyte != 98 && incomingbyte !=102) //if it isn't f or b
+                      {
+                        Serial.println("Typo detected, redirecting to beginning of combo2off()");
+                        combo2off();
+                      }
+  }}}
+else 
+{
+  combo2off();
+}
+}
