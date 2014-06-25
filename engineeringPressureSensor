@@ -1,0 +1,16 @@
+void setup()  {
+  //initialize serial port (defined in help menu) at 9600 baud
+  Serial.begin(9600);
+}
+
+void loop()  {
+  Serial.println(getPressure());
+  delay(100);
+}
+
+double getPressure(){
+  int aValue=analogRead(0);
+  double volt=aValue/204.8;
+  double pressure=0.037711935*(aValue-41);
+  return pressure;
+}
