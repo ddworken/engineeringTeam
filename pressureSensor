@@ -1,3 +1,8 @@
+/*
+
+This is made to be used with: http://www.digikey.com/product-detail/en/MPX4250AP/MPX4250AP-ND/464053 to get the relative pressure. 
+
+*/
 void setup()  {
   //initialize serial port (defined in help menu) at 9600 baud
   Serial.begin(9600);
